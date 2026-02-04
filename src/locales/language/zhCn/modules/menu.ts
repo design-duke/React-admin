@@ -11,4 +11,5 @@ export default {
   link: "链接",
   githubLink: "GitHub地址",
   products: "产品管理",
+  chat: "Ai 聊天",
 };

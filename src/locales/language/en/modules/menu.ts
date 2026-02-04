@@ -11,4 +11,5 @@ export default {
   link: "Link",
   githubLink: "GitHub Link",
   products: "Products Management",
+  chat: "Ai Chat",
 };

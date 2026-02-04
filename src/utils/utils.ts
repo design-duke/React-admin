@@ -44,6 +44,70 @@ export const searchRoute = (
   return result;
 };
 
+class MessageQueue {
+  queue: any[];
+  processing: boolean;
+
+  constructor() {
+    this.queue = [];
+    this.processing = false;
+  }
+
+  // 入队：传入一个异步处理函数（返回 Promise）
+  enqueue(handler: () => Promise<any>): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ handler, resolve, reject });
+      this._process();
+    });
+  }
+
+  async _process() {
+    if (this.processing || this.queue.length === 0) return;
+
+    this.processing = true;
+    const { handler, resolve, reject } = this.queue.shift();
+
+    try {
+      const result = await handler(); // 执行你的异步逻辑
+      resolve(result);
+    } catch (error) {
+      console.error("MQTT message handler error:", error);
+      reject(error);
+    } finally {
+      this.processing = false;
+      this._process();
+    }
+  }
+}
+
+const mqttMessageQueue = new MessageQueue();
+mqttMessageQueue.enqueue(async () => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.log(1);
+      resolve(); // 告诉队列：我完成了！
+    }, 2000);
+  });
+});
+
+mqttMessageQueue.enqueue(async () => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.log(2);
+      resolve();
+    }, 2000);
+  });
+});
+
+mqttMessageQueue.enqueue(async () => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.log(3);
+      resolve();
+    }, 2000);
+  });
+});
+
 // export function proxy() {
 //   let obj: any = { text: "vue3" };
 //   const bucket = new Set();

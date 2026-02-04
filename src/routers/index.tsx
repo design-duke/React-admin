@@ -58,6 +58,11 @@ export const routers: any = [
         auth: true,
         element: lazyLoad(lazy(() => import("@/pages/github/index"))),
       },
+      {
+        path: "/chat",
+        auth: true,
+        element: lazyLoad(lazy(() => import("@/pages/ai/index"))),
+      },
       { path: "*", element: lazyLoad(lazy(() => import("@/pages/404"))) },
     ],
   },
