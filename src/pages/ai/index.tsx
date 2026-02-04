@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
 import { Input, Button } from "antd";
+import { ArrowUpOutlined, PauseCircleOutlined } from "@ant-design/icons";
+import pauseIcon from "@/assets/svg/pause.svg";
 
 const md = new MarkdownIt({
   linkify: true,
@@ -28,10 +30,11 @@ const AiChat: React.FC = () => {
     const html = md.render(text || "");
     return { __html: DOMPurify.sanitize(html) };
   };
-
+  let abortController = null;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || loading) return;
+    abortController = new AbortController();
 
     // 用户消息
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
@@ -44,6 +47,7 @@ const AiChat: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
+        signal: abortController.signal,
       });
 
       if (!res.body) throw new Error("No response body");
@@ -85,6 +89,7 @@ const AiChat: React.FC = () => {
       console.log("AI 请求结束");
       setLoading(() => false);
       scrollToBottom();
+      abortController.abort();
     }
   };
 
@@ -143,12 +148,12 @@ const AiChat: React.FC = () => {
           }}
         />
         <Button
-          type="primary"
           disabled={loading}
+          type="primary"
           className="curor-pointer"
           onClick={handleSubmit}
         >
-          {loading ? "生成中..." : "发送"}
+          <ArrowUpOutlined />
         </Button>
       </form>
     </div>
