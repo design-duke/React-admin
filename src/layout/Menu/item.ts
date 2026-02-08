@@ -12,6 +12,12 @@ const menu = [
     path: "/products",
   },
   {
+    key: "/chat",
+    icon: "VideoCameraOutlined",
+    i18nKey: "menu.chat",
+    path: "/chat",
+  },
+  {
     key: "/three",
     icon: "FacebookOutlined",
     i18nKey: "menu.three",
