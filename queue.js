@@ -117,29 +117,28 @@ const addTask = (time, order) => {
 };
 
 console.log("开始执行...");
-addTask(1000, "1");
-addTask(500, "2");
-addTask(300, "3");
-addTask(400, "4");
+addTask(1000, "Scheduler1");
+addTask(500, "Scheduler2");
+addTask(300, "Scheduler3");
+addTask(400, "Scheduler4");
 
 class Scheduler2 {
-  queue = [];
-  activeCount = 0;
-
   constructor(limit) {
     this.limit = limit;
+    this.queue = [];
+    this.runningCount = 0;
   }
 
   add(task) {
     return new Promise((resolve, reject) => {
       const run = () => {
-        this.activeCount++;
+        this.runningCount++;
 
         task()
           .then(resolve)
           .catch(reject)
           .finally(() => {
-            this.activeCount--;
+            this.runningCount--;
             this.runNext();
           });
       };
@@ -150,9 +149,22 @@ class Scheduler2 {
   }
 
   runNext() {
-    if (this.activeCount >= this.limit) return;
-    const job = this.queue.shift();
-    if (!job) return;
-    job();
+    if (this.queue.length > 0 && this.runningCount < this.limit) {
+      const task = this.queue.shift();
+      if (!task) return;
+      task();
+    }
   }
 }
+
+const scheduler2 = new Scheduler2(2); // 最多并发 2 个
+
+const addTask2 = (time, order) => {
+  scheduler2.add(() => sleep(time)).then(() => console.log(order));
+};
+
+console.log("开始执行...");
+addTask2(1000, "Scheduler2-1");
+addTask2(500, "Scheduler2-2");
+addTask2(300, "Scheduler2-3");
+addTask2(400, "Scheduler2-4");
