@@ -71,12 +71,12 @@ const Home: React.FC = () => {
             {cardTitle.map((item) => (
               <Col span={8} key={item.title}>
                 <Card title={item.title}>
-                  <Statistic
+                  {/* <Statistic
                     precision={2}
                     value={item.value}
                     prefix={item.prefix}
                     formatter={formatter}
-                  />
+                  /> */}
                 </Card>
               </Col>
             ))}

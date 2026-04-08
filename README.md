@@ -2,7 +2,7 @@
 
 ## 🌐 浏览器兼容性
 
-本项目基于 **React 19 + Vite 7 + Ant Design 6**，仅支持现代浏览器：
+本项目基于 **React + Vite + Ant Design**，仅支持现代浏览器：
 
 - Chrome ≥ 64
 - Edge ≥ 79 (Chromium)
