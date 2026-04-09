@@ -45,42 +45,46 @@ export const searchRoute = (
 };
 
 class MessageQueue {
-  queue: any[];
-  processing: boolean;
+  queue: (() => void)[];
+  limit: number;
+  runCount: number;
 
-  constructor() {
+  constructor(limit: number) {
     this.queue = [];
-    this.processing = false;
+    this.limit = limit;
+    this.runCount = 0;
   }
 
   // 入队：传入一个异步处理函数（返回 Promise）
-  enqueue(handler: () => Promise<any>): Promise<any> {
+  enqueue<T>(handler: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.queue.push({ handler, resolve, reject });
-      this._process();
+      const run = async () => {
+        this.runCount++;
+        try {
+          const result = await handler();
+          resolve(result); // 处理完成，告诉调用者结果
+        } catch (error) {
+          reject(error); // 处理出错，告诉调用者错误
+        } finally {
+          this.runCount--;
+          this.next(); // 处理完当前任务后，继续处理下一个任务
+        }
+      };
+
+      this.queue.push(run);
+      this.next();
     });
   }
 
-  async _process() {
-    if (this.processing || this.queue.length === 0) return;
-
-    this.processing = true;
-    const { handler, resolve, reject } = this.queue.shift();
-
-    try {
-      const result = await handler(); // 执行你的异步逻辑
-      resolve(result);
-    } catch (error) {
-      console.error("MQTT message handler error:", error);
-      reject(error);
-    } finally {
-      this.processing = false;
-      this._process();
+  next() {
+    if (this.queue.length > 0 && this.runCount < this.limit) {
+      const task = this.queue.shift();
+      if (task) task();
     }
   }
 }
 
-const mqttMessageQueue = new MessageQueue();
+const mqttMessageQueue = new MessageQueue(1);
 mqttMessageQueue.enqueue(async () => {
   return new Promise<void>((resolve) => {
     setTimeout(() => {
