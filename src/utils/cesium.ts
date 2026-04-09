@@ -1,4 +1,15 @@
-import * as Cesium from "cesium";
+import {
+  Cartesian3,
+  Cartographic,
+  Math,
+  Cartesian2,
+  Viewer,
+  SceneTransforms,
+  EllipsoidGeodesic,
+  Ellipsoid,
+  PositionProperty,
+  VelocityOrientationProperty,
+} from "cesium";
 import * as turf from "@turf/turf";
 
 /**
@@ -13,9 +24,9 @@ import * as turf from "@turf/turf";
 export const degreesToCartesian = (
   longitude: number,
   latitude: number,
-  height: number = 0,
-): Cesium.Cartesian3 => {
-  return Cesium.Cartesian3.fromDegrees(longitude, latitude, height);
+  height: number = 0
+): Cartesian3 => {
+  return Cartesian3.fromDegrees(longitude, latitude, height);
 };
 
 /**
@@ -24,21 +35,21 @@ export const degreesToCartesian = (
 export const radiansToCartesian = (
   longitude: number,
   latitude: number,
-  height: number = 0,
-): Cesium.Cartesian3 => {
-  return Cesium.Cartesian3.fromRadians(longitude, latitude, height);
+  height: number = 0
+): Cartesian3 => {
+  return Cartesian3.fromRadians(longitude, latitude, height);
 };
 
 /**
  * 将 Cartesian3 转换为 [经度, 纬度, 高度]（单位：度, 度, 米）
  */
 export function cartesianToDegrees(
-  cartesian: Cesium.Cartesian3,
+  cartesian: Cartesian3
 ): [number, number, number] {
-  const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+  const cartographic = Cartographic.fromCartesian(cartesian);
   return [
-    Cesium.Math.toDegrees(cartographic.longitude),
-    Cesium.Math.toDegrees(cartographic.latitude),
+    Math.toDegrees(cartographic.longitude),
+    Math.toDegrees(cartographic.latitude),
     cartographic.height,
   ];
 }
@@ -47,11 +58,11 @@ export function cartesianToDegrees(
  * 将 Cartesian3 转换为 [经度, 纬度, 高度]（单位：弧度, 弧度, 米）
  */
 export function cartesianToRadians(
-  cartesian: Cesium.Cartesian3,
+  cartesian: Cartesian3
 ): [number, number, number] {
   // 注意：Cartographic 的 longitude 和 latitude 默认就是弧度
   // 制图学上经纬度通常使用度表示，但 Cesium 内部使用弧度进行计算，因此 Cartographic 的 longitude 和 latitude 属性默认就是弧度。
-  const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+  const cartographic = Cartographic.fromCartesian(cartesian);
   return [cartographic.longitude, cartographic.latitude, cartographic.height];
 }
 
@@ -63,14 +74,14 @@ export function cartesianToRadians(
 
 /**
  * 将屏幕像素坐标（x, y）转换为世界坐标（Cartesian3）
- * @param viewer Cesium.Viewer 实例
+ * @param viewer Viewer 实例
  * @param windowPosition 屏幕坐标 { x, y }
  * @returns Cartesian3 | undefined（可能为 undefined，如点击天空）
  */
 export function windowToCartesian3(
-  viewer: Cesium.Viewer,
-  windowPosition: Cesium.Cartesian2,
-): Cesium.Cartesian3 | undefined {
+  viewer: Viewer,
+  windowPosition: Cartesian2
+): Cartesian3 | undefined {
   const ray = viewer.camera.getPickRay(windowPosition);
   if (!ray) return undefined;
   return viewer.scene.globe.pick(ray, viewer.scene);
@@ -78,18 +89,15 @@ export function windowToCartesian3(
 
 /**
  * 将世界坐标（Cartesian3）转换为屏幕像素坐标
- * @param viewer Cesium.Viewer 实例
+ * @param viewer Viewer 实例
  * @param cartesian 世界坐标
  * @returns { x: number; y: number } | undefined
  */
 export function cartesian3ToWindowCoordinates(
-  viewer: Cesium.Viewer,
-  cartesian: Cesium.Cartesian3,
+  viewer: Viewer,
+  cartesian: Cartesian3
 ): { x: number; y: number } | undefined {
-  return Cesium.SceneTransforms.worldToWindowCoordinates(
-    viewer.scene,
-    cartesian,
-  );
+  return SceneTransforms.worldToWindowCoordinates(viewer.scene, cartesian);
 }
 
 /**
@@ -103,19 +111,11 @@ export function cartesian3ToWindowCoordinates(
  */
 export function computeDistance(
   point1: [number, number, number?], // [lon, lat, height?]
-  point2: [number, number, number?],
+  point2: [number, number, number?]
 ): number {
-  const cart1 = Cesium.Cartesian3.fromDegrees(
-    point1[0],
-    point1[1],
-    point1[2] ?? 0,
-  );
-  const cart2 = Cesium.Cartesian3.fromDegrees(
-    point2[0],
-    point2[1],
-    point2[2] ?? 0,
-  );
-  return Cesium.Cartesian3.distance(cart1, cart2);
+  const cart1 = Cartesian3.fromDegrees(point1[0], point1[1], point1[2] ?? 0);
+  const cart2 = Cartesian3.fromDegrees(point2[0], point2[1], point2[2] ?? 0);
+  return Cartesian3.distance(cart1, cart2);
 }
 
 /**
@@ -123,15 +123,11 @@ export function computeDistance(
  */
 export function computeGeodesicDistance(
   point1: [number, number],
-  point2: [number, number],
+  point2: [number, number]
 ): number {
-  const carto1 = Cesium.Cartographic.fromDegrees(point1[0], point1[1]);
-  const carto2 = Cesium.Cartographic.fromDegrees(point2[0], point2[1]);
-  const geodesic = new Cesium.EllipsoidGeodesic(
-    carto1,
-    carto2,
-    Cesium.Ellipsoid.WGS84,
-  );
+  const carto1 = Cartographic.fromDegrees(point1[0], point1[1]);
+  const carto2 = Cartographic.fromDegrees(point2[0], point2[1]);
+  const geodesic = new EllipsoidGeodesic(carto1, carto2, Ellipsoid.WGS84);
   return geodesic.surfaceDistance; // 单位：米
 }
 
@@ -140,21 +136,14 @@ export function computeGeodesicDistance(
  */
 export function computeHeading(
   origin: [number, number],
-  destination: [number, number],
+  destination: [number, number]
 ): number {
-  const carto1 = Cesium.Cartographic.fromDegrees(origin[0], origin[1]);
-  const carto2 = Cesium.Cartographic.fromDegrees(
-    destination[0],
-    destination[1],
-  );
+  const carto1 = Cartographic.fromDegrees(origin[0], origin[1]);
+  const carto2 = Cartographic.fromDegrees(destination[0], destination[1]);
 
-  const geodesic = new Cesium.EllipsoidGeodesic(
-    carto1,
-    carto2,
-    Cesium.Ellipsoid.WGS84,
-  );
+  const geodesic = new EllipsoidGeodesic(carto1, carto2, Ellipsoid.WGS84);
   const headingRad = geodesic.startHeading; // 弧度，从起点看向终点的初始方位角
-  let headingDeg = Cesium.Math.toDegrees(headingRad);
+  let headingDeg = Math.toDegrees(headingRad);
 
   // 确保结果在 [0, 360) 范围内
   if (headingDeg < 0) {
@@ -169,9 +158,9 @@ export function computeHeading(
  * @returns OrientationProperty
  */
 export function createVelocityOrientation(
-  positionProperty: Cesium.PositionProperty,
-): Cesium.VelocityOrientationProperty {
-  return new Cesium.VelocityOrientationProperty(positionProperty);
+  positionProperty: PositionProperty
+): VelocityOrientationProperty {
+  return new VelocityOrientationProperty(positionProperty);
 }
 
 /**
@@ -188,7 +177,7 @@ export function formatLonLat(lon: number, lat: number): string {
  */
 export function isPointInPolygon(
   point: [number, number],
-  polygon: [number, number][],
+  polygon: [number, number][]
 ): boolean {
   // 注意：Turf 使用 [lon, lat] 顺序，且不闭合（自动处理）
   const pt = turf.point(point);
@@ -208,13 +197,13 @@ export function isPointInPolygon(
  * 获取当前相机中心点的经纬度
  */
 export function getCameraCenter(
-  viewer: Cesium.Viewer,
+  viewer: Viewer
 ): [number, number, number] | null {
   const center = viewer.camera.pickEllipsoid(
-    new Cesium.Cartesian2(
+    new Cartesian2(
       viewer.canvas.clientWidth / 2,
-      viewer.canvas.clientHeight / 2,
-    ),
+      viewer.canvas.clientHeight / 2
+    )
   );
   if (!center) return null;
   return cartesianToDegrees(center);
