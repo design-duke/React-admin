@@ -37,7 +37,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "vetur.experimental.templateInterpolationService": true,
-  "workbench.colorTheme": "Default Dark+",
+  "workbench.colorTheme": "Dark+",
   "liveServer.settings.donotShowInfoMsg": true,
   "workbench.iconTheme": "vscode-icons",
   "[less]": {
