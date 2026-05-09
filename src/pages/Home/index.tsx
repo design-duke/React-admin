@@ -1,5 +1,5 @@
 import { DollarOutlined, ContainerOutlined } from "@ant-design/icons";
-import { Card, Statistic, Space, Row, Col } from "antd";
+import { Card, Statistic, Space, Row, Col, StatisticProps } from "antd";
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
 import FooterCard from "./footerCard/index";
@@ -26,8 +26,8 @@ const Home: React.FC = () => {
     },
   ]);
 
-  const formatter: any = (value: number) => (
-    <CountUp end={value} separator="," decimals={2} />
+  const formatter: StatisticProps["formatter"] = (value: number) => (
+    <CountUp end={value} separator="," />
   );
 
   const salesOption: EChartsOption = {
