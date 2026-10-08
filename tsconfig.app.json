@@ -17,7 +17,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "rootDir": ".",
+    "rootDir": "./",
     "paths": {
       "@/*": ["./src/*"]
     }
